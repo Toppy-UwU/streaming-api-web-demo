@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Request Page</title>
+</head>
+<body>
+    <button><a href="authen.html">authen</a></button>
+    <button><a href="list.html">video list</a></button>
+    <button><a href="upload.html">upload</a></button>
+    <hr>
+    <label for="token">Token:</label>
+    <input type="text" id="token" readonly>
+    
+    <button id="submitBtn">Submit API Request</button>
+
+    <div id="apiResponse"></div>
+
+    <script>
+        // Function to fetch data from the API using the stored token
+        function fetchAPI() {
+            // Retrieve the token from localStorage
+            const token = localStorage.getItem('token');
+
+            if (token) {
+                // Replace this URL with your actual API endpoint
+                const apiUrl = 'http://116.204.180.51:8900/get/hls/list/' + localStorage.getItem('token');
+
+                fetch(apiUrl, {
+                    method: 'GET',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Handle the API response data
+                    console.log('API Response:', data);
+
+                    // Display the data in the HTML page
+                    const apiResponseElement = document.getElementById('apiResponse');
+
+                    // Clear the previous content
+                    apiResponseElement.innerHTML = '';
+
+                    // Loop through the JSON response and create a button for each item
+                    data.forEach(item => {
+                        const button = document.createElement('button');
+                        button.textContent = item.V_title;
+
+                        // Add a custom data attribute to store the video URL
+                        button.setAttribute('data-url', item.url);
+
+                        // Add a click event to the button to redirect to the video player page
+                        button.addEventListener('click', function () {
+                            const videoUrl = this.getAttribute('data-url');
+                            window.location.href = `player.html?url=${encodeURIComponent(videoUrl)}`;
+                        });
+
+                        apiResponseElement.appendChild(button);
+                    });
+                })
+                .catch(error => {
+                    console.error('API Request failed:', error);
+                    // Handle API request failure (e.g., show an error message)
+                });
+            } else {
+                console.error('Token not found in localStorage');
+                // Handle the case where the token is missing
+            }
+        }
+
+        // Load the token from localStorage and update the input field
+        const tokenInput = document.getElementById('token');
+        const storedToken = localStorage.getItem('token');
+        if (storedToken) {
+            tokenInput.value = storedToken;
+        }
+
+        // Attach the fetchAPI function to the submit button's click event
+        document.getElementById('submitBtn').addEventListener('click', function () {
+            fetchAPI();
+        });
+    </script>
+</body>
+</html>
